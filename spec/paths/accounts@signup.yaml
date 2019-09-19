@@ -1,0 +1,57 @@
+post:
+  tags:
+    - Accounts
+  summary: signup
+  description: ''
+  responses:
+    '201':
+      description: Created
+      content:
+        application/json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/Created'
+          example:
+            url: /accounts/hogehoge
+    '400':
+      description: incorrect Request
+      content:
+        application/json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/Error'
+            example:
+              status: '400'
+              detail: email field is required
+    '409':
+      description: Conflict Email and/or userid
+      content:
+        application/json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/Error'
+          example:
+            status: '409'
+            detail: conflict email address.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            userid:
+              type: string
+              example: testuser
+              description: userid MUST be unique.
+            screenname:
+              example: hogehoge
+              type: string
+            email:
+              $ref: '#/components/schemas/Email'
+            password:
+              type: string
+              format: password
+              example: strongpassword

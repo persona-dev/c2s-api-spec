@@ -1,0 +1,6 @@
+type: object
+properties:
+  body:
+    $ref: '#/components/schemas/PostBody'
+required:
+  - body

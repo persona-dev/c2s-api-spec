@@ -1,19 +1,18 @@
 type: object
 properties:
-  username:
-    description: User supplied username
-    type: string
-    minLength: 4
-    example: John78
-  firstName:
-    description: User first name
-    type: string
-    minLength: 1
-    example: John
-  lastName:
-    description: User last name
-    type: string
-    minLength: 1
-    example: Smith
+  userID:
+    $ref: '#/components/schemas/UserID'
+  userName:
+    $ref: '#/components/schemas/UserName'
+  createdAt:
+    summary: Date when this user created. format is RFC3339.
+    $ref: '#/components/schemas/Time'
+  updatedAt:
+    $ref: '#/components/schemas/Time'
+    summary: Date when this user be finally active. format is RFC3339.
   email:
     $ref: '#/components/schemas/Email'
+required:
+  - userID
+  - userName
+  - createdAt

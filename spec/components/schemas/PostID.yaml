@@ -1,0 +1,4 @@
+type: string
+format: ulid
+description: 'PostID, type of ULID.'
+example: '01DN3RCQ2DM6C31BQ3PFK50B30'

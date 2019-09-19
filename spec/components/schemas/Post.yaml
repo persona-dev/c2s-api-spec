@@ -1,0 +1,15 @@
+type: object
+properties:
+  id:
+    $ref: '#/components/schemas/PostID'
+  body:
+    $ref: '#/components/schemas/PostBody'
+  createdAt:
+    $ref: '#/components/schemas/Time'
+  user:
+    $ref: '#/components/schemas/User'
+required:
+  - id
+  - body
+  - created_at
+  - user

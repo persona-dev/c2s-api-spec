@@ -1,0 +1,5 @@
+description: User supplied userID. Must be unique.
+type: string
+minLength: 1
+maxLength: 15
+example: John78

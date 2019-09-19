@@ -1,0 +1,9 @@
+value:
+  userID: John78
+  userName: John78
+  createdAt:
+    $ref: '#/components/schemas/Time'
+  updatedAt:
+    $ref: '#/components/schemas/Time'
+  email:
+    $ref: '#/components/schemas/Email'

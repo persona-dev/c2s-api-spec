@@ -1,0 +1,48 @@
+post:
+  tags:
+    - Posts
+  summary: Create posts
+  security:
+    - api_auth: []
+  responses:
+    '201':
+      description: Created
+      content:
+        application/json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/Created'
+            example:
+              url: /posts/01DN3RCQ2DM6C31BQ3PFK50B30
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/Error'
+            example:
+              status: '401'
+              detail: incorrect token
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/PostPayload'
+    required: true
+get:
+  tags:
+    - Posts
+  summary: Get posts
+  description: Get timeline
+  security:
+    - api_auth: []
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Posts'

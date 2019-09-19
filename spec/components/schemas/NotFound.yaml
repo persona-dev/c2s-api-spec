@@ -1,0 +1,6 @@
+type: object
+items:
+  $ref: '#/components/schemas/Error'
+example:
+  status: '404'
+  detail: resource is not found

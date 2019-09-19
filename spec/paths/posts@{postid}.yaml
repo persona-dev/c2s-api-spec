@@ -1,0 +1,60 @@
+get:
+  tags:
+    - Posts
+  summary: Get a post
+  parameters:
+    - name: postid
+      in: path
+      description: post id (ULID)
+      required: true
+      schema:
+        $ref: '#/components/schemas/PostID'
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Post'
+    '404':
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFound'
+delete:
+  tags:
+    - Posts
+  summary: Delete a post
+  security:
+    - api_auth: []
+  parameters:
+    - name: postid
+      in: path
+      description: post id (ULID)
+      required: true
+      schema:
+        type: string
+      examples:
+        response:
+          value: 01DN3RCQ2DM6C31BQ3PFK50B30
+  responses:
+    '204':
+      description: No Content
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            items:
+              $ref: '#/components/schemas/Error'
+            example:
+              status: '401'
+              detail: incorrect token
+    '404':
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFound'

@@ -1,0 +1,8 @@
+required:
+  - status
+  - detail
+properties:
+  status:
+    type: string
+  detail:
+    type: string

@@ -1,0 +1,5 @@
+description: User supplied username. Must be unique.
+type: string
+minLength: 1
+maxLength: 20
+example: John78
