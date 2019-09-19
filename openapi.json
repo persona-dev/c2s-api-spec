@@ -1,21 +1,20 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "version": "1.0.0",
-    "title": "Example.com",
-    "termsOfService": "https://example.com/terms/",
+    "version": "0.1.0",
+    "title": "Persona Client API",
+    "termsOfService": "https://persona.eniehack.net/tos",
     "contact": {
-      "email": "contact@example.com",
-      "url": "http://example.com/contact"
+      "email": "eniehack@outlook.jp"
     },
     "license": {
-      "name": "Apache 2.0",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+      "name": "AGPL 3.0",
+      "url": "https://www.gnu.org/licenses/agpl-3.0.html"
     },
     "x-logo": {
       "url": "https://apis.guru/openapi-template/logo.png"
     },
-    "description": "This is an **example** API to demonstrate features of OpenAPI specification\n# Introduction\nThis specification is intended to to be a good starting point for describing your API in \n[OpenAPI/Swagger format](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).\nIt also demonstrates features of [generator-openapi-repo](https://github.com/Rebilly/generator-openapi-repo) tool and \n[ReDoc](https://github.com/Rebilly/ReDoc) documentation engine. So beyond the standard OpenAPI syntax we use a few \n[vendor extensions](https://github.com/Rebilly/ReDoc/blob/master/docs/redoc-vendor-extensions.md).\n\n# OpenAPI Specification\nThe goal of The OpenAPI Specification is to define a standard, language-agnostic interface to REST APIs which\nallows both humans and computers to discover and understand the capabilities of the service without access to source\ncode, documentation, or through network traffic inspection. When properly defined via OpenAPI, a consumer can \nunderstand and interact with the remote service with a minimal amount of implementation logic. Similar to what\ninterfaces have done for lower-level programming, OpenAPI removes the guesswork in calling the service.\n"
+    "description": "[Persona-Server](https://github.com/eniehack/persona-server)で実装されている、もしくは今後実装される予定のAPIを記述するドキュメントです。\n\nAPIのバージョンとPersona-Serverのバージョンはリンクしています。\nつまり、Persona-Serverがv0.1.0となったとき、API v0.1.0を実装完了するということです。\n\n改善点等見つけられましたら[issue](https://github.com/persona-dev/c2s-api-spec/issues/new)までお願いします。\n## Paseto tokenについて\nPersonaでは認証認可を[Paseto](https://paseto.io)を用いて行います。\n"
   },
   "externalDocs": {
     "description": "Find out how to create Github repo for your OpenAPI spec.",
@@ -23,35 +22,33 @@
   },
   "tags": [
     {
-      "name": "Echo",
-      "description": "Example echo operations"
+      "name": "Accounts",
+      "description": "Operations about accounts. ex)login, signup, account settings."
     },
     {
-      "name": "User",
-      "description": "Operations about user"
+      "name": "Posts",
+      "description": "Operations about posts."
+    },
+    {
+      "name": "Administration",
+      "description": "Operation about Administration and Moderation."
     }
   ],
   "servers": [
     {
-      "url": "http://example.com/api/v1"
-    },
-    {
-      "url": "https://example.com/api/v1"
+      "url": "https://persona.eniehack.net/api/v1"
     }
   ],
   "paths": {
-    "/echo": {
+    "/accounts/signin": {
       "post": {
         "tags": [
-          "Echo"
+          "Accounts"
         ],
-        "summary": "Echo test",
-        "description": "Receive the exact message you've sent",
-        "operationId": "echo",
+        "summary": "signin",
+        "description": "Basic認証でログインしてください。その後tokenがResponceのBodyとして返却されます。",
+        "operationId": "login",
         "security": [
-          {
-            "api_key": []
-          },
           {
             "basic_auth": []
           }
@@ -59,37 +56,88 @@
         "responses": {
           "200": {
             "description": "OK",
-            "headers": {
-              "X-Rate-Limit": {
-                "description": "calls per hour allowed by the user",
-                "schema": {
-                  "type": "integer",
-                  "format": "int32"
-                }
-              },
-              "X-Expires-After": {
-                "$ref": "#/components/headers/ExpiresAfter"
-              }
-            },
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
-                },
-                "examples": {
-                  "response": {
-                    "value": "Hello world!"
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "items": {
+                    "$ref": "#/components/schemas/Error"
+                  },
+                  "example": {
+                    "status": "401",
+                    "detail": "incorrect userid or password"
                   }
                 }
-              },
-              "application/xml": {
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/signup": {
+      "post": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "signup",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "object",
+                  "items": {
+                    "$ref": "#/components/schemas/Created"
+                  }
+                },
+                "example": {
+                  "url": "/accounts/hogehoge"
                 }
-              },
-              "text/csv": {
+              }
+            }
+          },
+          "400": {
+            "description": "incorrect Request",
+            "content": {
+              "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "object",
+                  "items": {
+                    "$ref": "#/components/schemas/Error"
+                  },
+                  "example": {
+                    "status": "400",
+                    "detail": "email field is required"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict Email and/or userid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "items": {
+                    "$ref": "#/components/schemas/Error"
+                  }
+                },
+                "example": {
+                  "status": "409",
+                  "detail": "conflict email address."
                 }
               }
             }
@@ -99,185 +147,389 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "string",
-                "example": "Hello world!"
-              }
-            },
-            "application/xml": {
-              "schema": {
-                "type": "string",
-                "example": "Hello world!"
+                "type": "object",
+                "properties": {
+                  "userid": {
+                    "type": "string",
+                    "example": "testuser",
+                    "description": "userid MUST be unique."
+                  },
+                  "screenname": {
+                    "example": "hogehoge",
+                    "type": "string"
+                  },
+                  "email": {
+                    "$ref": "#/components/schemas/Email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "strongpassword"
+                  }
+                }
               }
             }
-          },
-          "description": "Echo payload",
-          "required": true
-        },
-        "x-code-samples": [
-          {
-            "lang": "C#",
-            "source": "API.v1.Echo echo = new API.v1.Echo();\necho.message = \"Hello World!\");\nEchoResponse response = echo.post();\nif (response.statusCode == HttpStatusCode.Created)\n{\n  // Success\n}\nelse\n{\n  // Something wrong -- check response for errors\n  Console.WriteLine(response.getRawResponse());\n}\n"
-          },
-          {
-            "lang": "PHP",
-            "source": "$form = new \\API\\Entities\\Echo();\n$form->setMessage(\"Hello World!\");\ntry {\n    $pet = $client->echo()->post($form);\n} catch (UnprocessableEntityException $e) {\n    var_dump($e->getErrors());\n}\n"
-          }
-        ]
-      }
-    },
-    "/users/{username}": {
-      "parameters": [
-        {
-          "name": "pretty_print",
-          "in": "query",
-          "description": "Pretty print response",
-          "schema": {
-            "type": "boolean"
           }
         }
-      ],
-      "get": {
+      }
+    },
+    "/posts": {
+      "post": {
         "tags": [
-          "User"
+          "Posts"
         ],
-        "summary": "Get user by user name",
-        "description": "Some description of the operation. \nYou can use `markdown` here.\n",
-        "operationId": "getUserByName",
-        "parameters": [
-          {
-            "name": "username",
-            "in": "path",
-            "description": "The name that needs to be fetched",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "with_email",
-            "in": "query",
-            "description": "Filter users without email",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
+        "summary": "Create posts",
         "security": [
           {
-            "main_auth": [
-              "read:users"
-            ]
-          },
-          {
-            "api_key": []
+            "api_auth": []
           }
         ],
         "responses": {
-          "200": {
-            "description": "Success",
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
-                },
-                "example": {
-                  "username": "user1",
-                  "email": "user@example.com"
+                  "type": "object",
+                  "items": {
+                    "$ref": "#/components/schemas/Created"
+                  },
+                  "example": {
+                    "url": "/posts/01DN3RCQ2DM6C31BQ3PFK50B30"
+                  }
                 }
               }
             }
           },
-          "403": {
-            "description": "Forbidden"
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "items": {
+                    "$ref": "#/components/schemas/Error"
+                  },
+                  "example": {
+                    "status": "401",
+                    "detail": "incorrect token"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostPayload"
+              }
+            }
+          },
+          "required": true
+        }
+      },
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Get posts",
+        "description": "Get timeline",
+        "security": [
+          {
+            "api_auth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Posts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{postid}": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Get a post",
+        "parameters": [
+          {
+            "name": "postid",
+            "in": "path",
+            "description": "post id (ULID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PostID"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Post"
+                }
+              }
+            }
           },
           "404": {
-            "description": "User not found"
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFound"
+                }
+              }
+            }
           }
         }
       },
-      "put": {
+      "delete": {
         "tags": [
-          "User"
+          "Posts"
         ],
-        "summary": "Updated user",
-        "description": "This can only be done by the logged in user.",
-        "operationId": "updateUser",
+        "summary": "Delete a post",
+        "security": [
+          {
+            "api_auth": []
+          }
+        ],
         "parameters": [
           {
-            "name": "username",
+            "name": "postid",
             "in": "path",
-            "description": "The name that needs to be updated",
+            "description": "post id (ULID)",
             "required": true,
             "schema": {
               "type": "string"
+            },
+            "examples": {
+              "response": {
+                "value": "01DN3RCQ2DM6C31BQ3PFK50B30"
+              }
             }
-          }
-        ],
-        "security": [
-          {
-            "main_auth": [
-              "write:users"
-            ]
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "204": {
+            "description": "No Content"
           },
-          "400": {
-            "description": "Invalid user supplied"
-          },
-          "404": {
-            "description": "User not found"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/User"
-              }
-            },
-            "application/xml": {
-              "schema": {
-                "$ref": "#/components/schemas/User"
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "items": {
+                    "$ref": "#/components/schemas/Error"
+                  },
+                  "example": {
+                    "status": "401",
+                    "detail": "incorrect token"
+                  }
+                }
               }
             }
           },
-          "description": "Updated user object",
-          "required": true
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFound"
+                }
+              }
+            }
+          }
         }
       }
     }
   },
   "components": {
     "schemas": {
+      "Created": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
       "Email": {
         "description": "User email address",
         "type": "string",
-        "format": "test",
-        "example": "john.smith@example.com"
+        "format": "email",
+        "example": "persona@example.com"
+      },
+      "Error": {
+        "required": [
+          "status",
+          "detail"
+        ],
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      },
+      "NotFound": {
+        "type": "object",
+        "items": {
+          "$ref": "#/components/schemas/Error"
+        },
+        "example": {
+          "status": "404",
+          "detail": "resource is not found"
+        }
+      },
+      "Post": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/PostID"
+          },
+          "body": {
+            "$ref": "#/components/schemas/PostBody"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Time"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "required": [
+          "id",
+          "body",
+          "created_at",
+          "user"
+        ]
+      },
+      "PostBody": {
+        "description": "Post's body",
+        "type": "string",
+        "minLength": 1,
+        "example": "hogehoge"
+      },
+      "PostID": {
+        "type": "string",
+        "format": "ulid",
+        "description": "PostID, type of ULID.",
+        "example": "01DN3RCQ2DM6C31BQ3PFK50B30"
+      },
+      "PostPayload": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "$ref": "#/components/schemas/PostBody"
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "Posts": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Post"
+        }
+      },
+      "Time": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2006-01-02T15:04:05Z07:00",
+        "description": "format: RFC3339"
+      },
+      "Token": {
+        "description": "Authorization Paseto token",
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "format": "Paseto"
+          }
+        },
+        "example": {
+          "token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.JlX3gXGyClTBFciHhknWrjo7SKqyJ5iBO0n-3S2_I7cIgfaZAeRDJ3SQEbaPxVC7X8aqGCOM-pQOjZPKUJN8DMFrlHTOdqMs0TwQ2PRBmVAxXTSOZOoEhD4ZNCHohYoyfoDhJDP4Qye_FCqu6POJzg0Jcun4d3KW04QTiGxv2PkYqmB7nHxYuJdnqE3704hIS56pc_8q6AW0WIT0W-nIvwzaSbtBU9RgaC7ZpBD2LiNE265UBIFraMDF8IAFw9itZSUCTKg1Q-q27NwwBZNGYStMdIBDor2Bsq5ge51EkWajzZ7ALisVp-bskzUsqUf77ejqX_CBAqkNdH1Zebn93A"
+        }
       },
       "User": {
         "type": "object",
         "properties": {
-          "username": {
-            "description": "User supplied username",
-            "type": "string",
-            "minLength": 4,
-            "example": "John78"
+          "userID": {
+            "$ref": "#/components/schemas/UserID"
           },
-          "firstName": {
-            "description": "User first name",
-            "type": "string",
-            "minLength": 1,
-            "example": "John"
+          "userName": {
+            "$ref": "#/components/schemas/UserName"
           },
-          "lastName": {
-            "description": "User last name",
-            "type": "string",
-            "minLength": 1,
-            "example": "Smith"
+          "createdAt": {
+            "summary": "Date when this user created. format is RFC3339.",
+            "$ref": "#/components/schemas/Time"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Time",
+            "summary": "Date when this user be finally active. format is RFC3339."
+          },
+          "email": {
+            "$ref": "#/components/schemas/Email"
+          }
+        },
+        "required": [
+          "userID",
+          "userName",
+          "createdAt"
+        ]
+      },
+      "UserID": {
+        "description": "User supplied userID. Must be unique.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 15,
+        "example": "John78"
+      },
+      "UserName": {
+        "description": "User supplied username. Must be unique.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20,
+        "example": "John78"
+      }
+    },
+    "examples": {
+      "Token": {
+        "value": {
+          "token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.JlX3gXGyClTBFciHhknWrjo7SKqyJ5iBO0n-3S2_I7cIgfaZAeRDJ3SQEbaPxVC7X8aqGCOM-pQOjZPKUJN8DMFrlHTOdqMs0TwQ2PRBmVAxXTSOZOoEhD4ZNCHohYoyfoDhJDP4Qye_FCqu6POJzg0Jcun4d3KW04QTiGxv2PkYqmB7nHxYuJdnqE3704hIS56pc_8q6AW0WIT0W-nIvwzaSbtBU9RgaC7ZpBD2LiNE265UBIFraMDF8IAFw9itZSUCTKg1Q-q27NwwBZNGYStMdIBDor2Bsq5ge51EkWajzZ7ALisVp-bskzUsqUf77ejqX_CBAqkNdH1Zebn93A"
+        }
+      },
+      "User": {
+        "value": {
+          "userID": "John78",
+          "userName": "John78",
+          "createdAt": {
+            "$ref": "#/components/schemas/Time"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Time"
           },
           "email": {
             "$ref": "#/components/schemas/Email"
@@ -295,26 +547,14 @@
       }
     },
     "securitySchemes": {
-      "api_key": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "api_key"
+      "api_auth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Paseto"
       },
       "basic_auth": {
         "type": "http",
         "scheme": "basic"
-      },
-      "main_auth": {
-        "type": "oauth2",
-        "flows": {
-          "implicit": {
-            "authorizationUrl": "http://example.com/api/oauth/dialog",
-            "scopes": {
-              "read:users": "read users info",
-              "write:users": "modify or remove users"
-            }
-          }
-        }
       }
     }
   }
