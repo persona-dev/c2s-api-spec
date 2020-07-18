@@ -1,0 +1,371 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0
+  title: Persona Client API
+  termsOfService: 'https://persona.eniehack.net/tos'
+  contact:
+    email: eniehack@outlook.jp
+  license:
+    name: AGPL 3.0
+    url: 'https://www.gnu.org/licenses/agpl-3.0.html'
+  x-logo:
+    url: 'https://apis.guru/openapi-template/logo.png'
+  description: |
+    [Persona-Server](https://github.com/eniehack/persona-server)で実装されている、もしくは今後実装される予定のAPIを記述するドキュメントです。
+
+    APIのバージョンとPersona-Serverのバージョンはリンクしています。
+    つまり、Persona-Serverがv0.1.0となったとき、API v0.1.0を実装完了するということです。
+
+    改善点等見つけられましたら[issue](https://github.com/persona-dev/c2s-api-spec/issues/new)までお願いします。
+    ## Paseto tokenについて
+    Personaでは認証認可を[Paseto](https://paseto.io)を用いて行います。
+externalDocs:
+  description: Find out how to create Github repo for your OpenAPI spec.
+  url: 'https://github.com/Rebilly/generator-openapi-repo'
+tags:
+  - name: Accounts
+    description: 'Operations about accounts. ex)login, signup, account settings.'
+  - name: Posts
+    description: Operations about posts.
+  - name: Administration
+    description: Operation about Administration and Moderation.
+servers:
+  - url: 'https://persona.eniehack.net/api/v1'
+paths:
+  /accounts/signin:
+    post:
+      tags:
+        - Accounts
+      summary: signin
+      description: Basic認証でログインしてください。その後tokenがResponceのBodyとして返却されます。
+      operationId: login
+      security:
+        - basic_auth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Error'
+                example:
+                  status: '401'
+                  detail: incorrect userid or password
+  /accounts/signup:
+    post:
+      tags:
+        - Accounts
+      summary: signup
+      description: ''
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Created'
+              example:
+                url: /accounts/hogehoge
+        '400':
+          description: incorrect Request
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Error'
+                example:
+                  status: '400'
+                  detail: email field is required
+        '409':
+          description: Conflict Email and/or userid
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Error'
+              example:
+                status: '409'
+                detail: conflict email address.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userid:
+                  type: string
+                  example: testuser
+                  description: userid MUST be unique.
+                screenname:
+                  example: hogehoge
+                  type: string
+                email:
+                  $ref: '#/components/schemas/Email'
+                password:
+                  type: string
+                  format: password
+                  example: strongpassword
+  /posts:
+    post:
+      tags:
+        - Posts
+      summary: Create posts
+      security:
+        - api_auth: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Created'
+                example:
+                  url: /posts/01DN3RCQ2DM6C31BQ3PFK50B30
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Error'
+                example:
+                  status: '401'
+                  detail: incorrect token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostPayload'
+        required: true
+    get:
+      tags:
+        - Posts
+      summary: Get posts
+      description: Get timeline
+      security:
+        - api_auth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Posts'
+  '/posts/{postid}':
+    get:
+      tags:
+        - Posts
+      summary: Get a post
+      parameters:
+        - name: postid
+          in: path
+          description: post id (ULID)
+          required: true
+          schema:
+            $ref: '#/components/schemas/PostID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+    delete:
+      tags:
+        - Posts
+      summary: Delete a post
+      security:
+        - api_auth: []
+      parameters:
+        - name: postid
+          in: path
+          description: post id (ULID)
+          required: true
+          schema:
+            type: string
+          examples:
+            response:
+              value: 01DN3RCQ2DM6C31BQ3PFK50B30
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Error'
+                example:
+                  status: '401'
+                  detail: incorrect token
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+components:
+  schemas:
+    Created:
+      type: object
+      properties:
+        url:
+          type: string
+      required:
+        - url
+    Email:
+      description: User email address
+      type: string
+      format: email
+      example: persona@example.com
+    Error:
+      required:
+        - status
+        - detail
+      properties:
+        status:
+          type: string
+        detail:
+          type: string
+    NotFound:
+      type: object
+      items:
+        $ref: '#/components/schemas/Error'
+      example:
+        status: '404'
+        detail: resource is not found
+    Post:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/PostID'
+        body:
+          $ref: '#/components/schemas/PostBody'
+        createdAt:
+          $ref: '#/components/schemas/Time'
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - id
+        - body
+        - created_at
+        - user
+    PostBody:
+      description: Post's body
+      type: string
+      minLength: 1
+      example: hogehoge
+    PostID:
+      type: string
+      format: ulid
+      description: 'PostID, type of ULID.'
+      example: 01DN3RCQ2DM6C31BQ3PFK50B30
+    PostPayload:
+      type: object
+      properties:
+        body:
+          $ref: '#/components/schemas/PostBody'
+      required:
+        - body
+    Posts:
+      type: array
+      items:
+        $ref: '#/components/schemas/Post'
+    Time:
+      type: string
+      format: date-time
+      example: '2006-01-02T15:04:05Z07:00'
+      description: 'format: RFC3339'
+    Token:
+      description: Authorization Paseto token
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          format: Paseto
+      example:
+        token: eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.JlX3gXGyClTBFciHhknWrjo7SKqyJ5iBO0n-3S2_I7cIgfaZAeRDJ3SQEbaPxVC7X8aqGCOM-pQOjZPKUJN8DMFrlHTOdqMs0TwQ2PRBmVAxXTSOZOoEhD4ZNCHohYoyfoDhJDP4Qye_FCqu6POJzg0Jcun4d3KW04QTiGxv2PkYqmB7nHxYuJdnqE3704hIS56pc_8q6AW0WIT0W-nIvwzaSbtBU9RgaC7ZpBD2LiNE265UBIFraMDF8IAFw9itZSUCTKg1Q-q27NwwBZNGYStMdIBDor2Bsq5ge51EkWajzZ7ALisVp-bskzUsqUf77ejqX_CBAqkNdH1Zebn93A
+    User:
+      type: object
+      properties:
+        userID:
+          $ref: '#/components/schemas/UserID'
+        userName:
+          $ref: '#/components/schemas/UserName'
+        createdAt:
+          summary: Date when this user created. format is RFC3339.
+          $ref: '#/components/schemas/Time'
+        updatedAt:
+          $ref: '#/components/schemas/Time'
+          summary: Date when this user be finally active. format is RFC3339.
+        email:
+          $ref: '#/components/schemas/Email'
+      required:
+        - userID
+        - userName
+        - createdAt
+    UserID:
+      description: User supplied userID. Must be unique.
+      type: string
+      minLength: 1
+      maxLength: 15
+      example: John78
+    UserName:
+      description: User supplied username. Must be unique.
+      type: string
+      minLength: 1
+      maxLength: 20
+      example: John78
+  examples:
+    Token:
+      value:
+        token: eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.JlX3gXGyClTBFciHhknWrjo7SKqyJ5iBO0n-3S2_I7cIgfaZAeRDJ3SQEbaPxVC7X8aqGCOM-pQOjZPKUJN8DMFrlHTOdqMs0TwQ2PRBmVAxXTSOZOoEhD4ZNCHohYoyfoDhJDP4Qye_FCqu6POJzg0Jcun4d3KW04QTiGxv2PkYqmB7nHxYuJdnqE3704hIS56pc_8q6AW0WIT0W-nIvwzaSbtBU9RgaC7ZpBD2LiNE265UBIFraMDF8IAFw9itZSUCTKg1Q-q27NwwBZNGYStMdIBDor2Bsq5ge51EkWajzZ7ALisVp-bskzUsqUf77ejqX_CBAqkNdH1Zebn93A
+    User:
+      value:
+        userID: John78
+        userName: John78
+        createdAt:
+          $ref: '#/components/schemas/Time'
+        updatedAt:
+          $ref: '#/components/schemas/Time'
+        email:
+          $ref: '#/components/schemas/Email'
+  headers:
+    ExpiresAfter:
+      description: date in UTC when token expires
+      schema:
+        type: string
+        format: date-time
+  securitySchemes:
+    api_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: Paseto
+    basic_auth:
+      type: http
+      scheme: basic
